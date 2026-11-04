@@ -2,16 +2,21 @@ package com.financetracker;
 
 import com.financetracker.model.Transaction;
 import com.financetracker.model.TransactionType;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Service
 public class FinanceService {
 
     private final List<Transaction> transactions = new ArrayList<>();
 
-    public void addTransaction(Transaction transaction) {
+    private final AtomicInteger idGenerator = new AtomicInteger(1);
+
+    public Transaction addTransaction(Transaction transaction) {
 
         if (transaction == null) {
             throw new IllegalArgumentException(
@@ -42,6 +47,29 @@ public class FinanceService {
         }
 
         transactions.add(transaction);
+
+        return transaction;
+    }
+
+    public Transaction createTransaction(
+            TransactionType type,
+            BigDecimal amount,
+            com.financetracker.model.Category category,
+            String description,
+            java.time.LocalDate date
+    ) {
+        int id = idGenerator.getAndIncrement();
+
+        Transaction transaction = new Transaction(
+                id,
+                type,
+                amount,
+                category,
+                description,
+                date
+        );
+
+        return addTransaction(transaction);
     }
 
     public List<Transaction> getTransactions() {
