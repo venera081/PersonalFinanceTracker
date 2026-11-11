@@ -1,13 +1,16 @@
 package com.financetracker;
 
+import com.financetracker.model.Category;
 import com.financetracker.model.Transaction;
 import com.financetracker.model.TransactionType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class FinanceService {
@@ -54,9 +57,9 @@ public class FinanceService {
     public Transaction createTransaction(
             TransactionType type,
             BigDecimal amount,
-            com.financetracker.model.Category category,
+            Category category,
             String description,
-            java.time.LocalDate date
+            LocalDate date
     ) {
         int id = idGenerator.getAndIncrement();
 
@@ -74,6 +77,34 @@ public class FinanceService {
 
     public List<Transaction> getTransactions() {
         return new ArrayList<>(transactions);
+    }
+
+    public List<Transaction> filterTransactions(
+            TransactionType type,
+            Category category,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
+        if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
+            throw new IllegalArgumentException(
+                    "dateFrom cannot be after dateTo."
+            );
+        }
+
+        return transactions.stream()
+                .filter(transaction ->
+                        type == null || transaction.getType() == type
+                )
+                .filter(transaction ->
+                        category == null || transaction.getCategory() == category
+                )
+                .filter(transaction ->
+                        dateFrom == null || !transaction.getDate().isBefore(dateFrom)
+                )
+                .filter(transaction ->
+                        dateTo == null || !transaction.getDate().isAfter(dateTo)
+                )
+                .collect(Collectors.toList());
     }
 
     public void loadTransactions(List<Transaction> loadedTransactions) {
