@@ -1,25 +1,44 @@
 package com.financetracker.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "transactions")
 public class Transaction {
-    private final int id;
-    private final TransactionType type;
-    private final BigDecimal amount;
-    private final Category category;
-    private final String description;
-    private final LocalDate date;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Category category;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    public Transaction() {
+    }
 
     public Transaction(
-            int id,
             TransactionType type,
             BigDecimal amount,
             Category category,
             String description,
             LocalDate date
     ) {
-        this.id = id;
         this.type = type;
         this.amount = amount;
         this.category = category;
@@ -27,7 +46,7 @@ public class Transaction {
         this.date = date;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -49,17 +68,5 @@ public class Transaction {
 
     public LocalDate getDate() {
         return date;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "id=" + id +
-                ", type=" + type +
-                ", amount=" + amount +
-                ", category=" + category +
-                ", description='" + description + '\'' +
-                ", date=" + date +
-                '}';
     }
 }
