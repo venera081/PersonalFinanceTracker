@@ -42,3 +42,8 @@ target/
 .idea/
 *.iml
 transactions.csv
+
+# Environment variables
+.env
+.env.*
+!.env.example
