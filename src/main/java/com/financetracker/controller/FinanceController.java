@@ -60,5 +60,26 @@ public class FinanceController {
                 request.getDescription(),
                 request.getDate()
         );
+
+    }
+    @PutMapping("/{id}")
+    public Transaction updateTransaction(
+            @PathVariable Long id,
+            @Valid @RequestBody TransactionRequest request
+    ) {
+        return financeService.updateTransaction(
+                id,
+                request.getType(),
+                request.getAmount(),
+                request.getCategory(),
+                request.getDescription(),
+                request.getDate()
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTransaction(@PathVariable Long id) {
+        financeService.deleteTransaction(id);
     }
 }

@@ -69,4 +69,24 @@ public class Transaction {
     public LocalDate getDate() {
         return date;
     }
+
+    public void setType(TransactionType type) {
+        this.type = type;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 }

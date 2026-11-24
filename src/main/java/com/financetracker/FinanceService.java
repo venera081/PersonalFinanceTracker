@@ -5,10 +5,13 @@ import com.financetracker.model.Transaction;
 import com.financetracker.model.TransactionType;
 import com.financetracker.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Service
 public class FinanceService {
@@ -94,5 +97,56 @@ public class FinanceService {
 
     public BigDecimal getBalance() {
         return getTotalIncome().subtract(getTotalExpenses());
+    }
+
+    public Transaction updateTransaction(
+            Long id,
+            TransactionType type,
+            BigDecimal amount,
+            Category category,
+            String description,
+            LocalDate date
+    ) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Transaction not found"
+                ));
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "Amount must be greater than zero."
+            );
+        }
+
+        if (type == null || category == null || date == null) {
+            throw new IllegalArgumentException(
+                    "Transaction fields cannot be null."
+            );
+        }
+
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Description cannot be empty."
+            );
+        }
+
+        transaction.setType(type);
+        transaction.setAmount(amount);
+        transaction.setCategory(category);
+        transaction.setDescription(description);
+        transaction.setDate(date);
+
+        return transactionRepository.save(transaction);
+    }
+
+    public void deleteTransaction(Long id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Transaction not found"
+                ));
+
+        transactionRepository.delete(transaction);
     }
 }
