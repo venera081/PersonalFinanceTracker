@@ -64,4 +64,36 @@ class FinanceServiceTest {
 
         verifyNoInteractions(transactionRepository);
     }
+
+    @Test
+    void shouldRejectZeroAmount() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> financeService.createTransaction(
+                        TransactionType.EXPENSE,
+                        BigDecimal.ZERO,
+                        Category.FOOD,
+                        "Zero amount",
+                        LocalDate.of(2026, 11, 25)
+                )
+        );
+
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void shouldRejectBlankDescription() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> financeService.createTransaction(
+                        TransactionType.EXPENSE,
+                        new BigDecimal("100.00"),
+                        Category.FOOD,
+                        "   ",
+                        LocalDate.of(2026, 11, 25)
+                )
+        );
+
+        verifyNoInteractions(transactionRepository);
+    }
 }
