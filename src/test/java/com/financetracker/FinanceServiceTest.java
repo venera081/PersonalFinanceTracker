@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -95,5 +97,98 @@ class FinanceServiceTest {
         );
 
         verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void shouldUpdateExistingTransaction() {
+        Transaction transaction = new Transaction(
+                TransactionType.INCOME,
+                new BigDecimal("1500.00"),
+                Category.SALARY,
+                "Old salary",
+                LocalDate.of(2026, 11, 25)
+        );
+
+        when(transactionRepository.findById(1L))
+                .thenReturn(Optional.of(transaction));
+
+        when(transactionRepository.save(any(Transaction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Transaction updatedTransaction = financeService.updateTransaction(
+                1L,
+                TransactionType.INCOME,
+                new BigDecimal("2000.00"),
+                Category.SALARY,
+                "Updated salary",
+                LocalDate.of(2026, 11, 27)
+        );
+
+        assertEquals(
+                new BigDecimal("2000.00"),
+                updatedTransaction.getAmount()
+        );
+        assertEquals("Updated salary", updatedTransaction.getDescription());
+        assertEquals(
+                LocalDate.of(2026, 11, 27),
+                updatedTransaction.getDate()
+        );
+
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingNonExistingTransaction() {
+        when(transactionRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> financeService.updateTransaction(
+                        999L,
+                        TransactionType.EXPENSE,
+                        new BigDecimal("100.00"),
+                        Category.FOOD,
+                        "Test expense",
+                        LocalDate.of(2026, 11, 27)
+                )
+        );
+
+        assertEquals(404, exception.getStatusCode().value());
+
+        verify(transactionRepository, never()).save(any(Transaction.class));
+    }
+
+    @Test
+    void shouldDeleteExistingTransaction() {
+        Transaction transaction = new Transaction(
+                TransactionType.EXPENSE,
+                new BigDecimal("500.00"),
+                Category.FOOD,
+                "Lunch",
+                LocalDate.of(2026, 11, 27)
+        );
+
+        when(transactionRepository.findById(1L))
+                .thenReturn(java.util.Optional.of(transaction));
+
+        financeService.deleteTransaction(1L);
+
+        verify(transactionRepository).delete(transaction);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistingTransaction() {
+        when(transactionRepository.findById(999L))
+                .thenReturn(java.util.Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> financeService.deleteTransaction(999L)
+        );
+
+        assertEquals(404, exception.getStatusCode().value());
+
+        verify(transactionRepository, never()).delete(any(Transaction.class));
     }
 }
